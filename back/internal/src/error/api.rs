@@ -1,6 +1,7 @@
 #[derive(Debug, Clone)]
 pub enum ApiError {
     InternalServerError(String),
+    UnprocessableEntity(String),
     BootError(String),
 }
 
