@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use chrono::{DateTime, NaiveDateTime, Utc};
 
 use crate::domain::{
     port::user_repository::{UserError, UserRepository},

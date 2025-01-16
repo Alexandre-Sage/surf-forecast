@@ -1,14 +1,12 @@
 use axum::{
     body::Body,
     http::{Request, StatusCode},
-    Json,
 };
 use internal::r#async::TryFromAsync;
-use serde::{Serialize, Serializer};
 use serde_json::json;
 use sqlx::migrate;
 use testcontainers::runners::AsyncRunner;
-use tower::{Service, ServiceExt};
+use tower::ServiceExt;
 use user_server::{
     domain::r#type::user::UserPayload,
     inbound::{api::Api, env::Env},

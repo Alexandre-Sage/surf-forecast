@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 
 use crate::domain::{
     port::user_repository::{UserError, UserRepository},
