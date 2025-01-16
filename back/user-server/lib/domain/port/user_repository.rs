@@ -5,7 +5,7 @@ use crate::domain::r#type::user::User;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum UserError {
-    Unknown(String),
+    Uncontroled(String),
     PasswordMismatch,
     PasswordLength,
     UserNameTaken,
@@ -15,7 +15,7 @@ pub enum UserError {
 impl From<UserError> for ApiError {
     fn from(error: UserError) -> Self {
         match error {
-            UserError::Unknown(err) => Self::InternalServerError(err),
+            UserError::Uncontroled(err) => Self::InternalServerError(err),
             UserError::PasswordMismatch => {
                 Self::UnprocessableEntity("PASSWORD_MISMATCH".to_string())
             }

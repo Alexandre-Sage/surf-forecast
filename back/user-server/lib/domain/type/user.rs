@@ -4,7 +4,7 @@ use argon2::{
     },
     Argon2,
 };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use fake::Fake;
 use internal::error::api::ApiError;
 use serde::{Deserialize, Serialize};
@@ -37,13 +37,13 @@ impl UserPayload {
 
 #[derive(Debug, Clone)]
 pub struct User {
-    id: Uuid,
+    pub(crate) id: Uuid,
     pub(crate) user_name: String,
     pub(crate) email: String,
-    first_name: String,
-    last_name: String,
-    password: Option<String>,
-    created_at: DateTime<Utc>,
+    pub(crate) first_name: String,
+    pub(crate) last_name: String,
+    pub(crate) password: String,
+    pub(crate) created_at: NaiveDateTime,
 }
 
 impl User {
@@ -51,11 +51,11 @@ impl User {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
         let password_hash = argon2
-            .hash_password(self.password.unwrap().as_bytes(), &salt)
+            .hash_password(self.password.as_bytes(), &salt)
             .map_err(|err| ApiError::InternalServerError(err.to_string()))?
             .to_string();
         Ok(Self {
-            password: Some(password_hash),
+            password: password_hash,
             id: self.id,
             first_name: self.first_name,
             last_name: self.last_name,
@@ -87,8 +87,8 @@ impl TryFrom<UserPayload> for User {
             first_name: value.first_name,
             email: value.email,
             last_name: value.last_name,
-            created_at: Utc::now(),
-            password: Some(value.password),
+            created_at: Utc::now().naive_utc(),
+            password: value.password,
         })
     }
 }
@@ -100,7 +100,7 @@ impl From<User> for UserDto {
             first_name: value.first_name,
             last_name: value.last_name,
             email: value.email,
-            created_at: value.created_at,
+            created_at: value.created_at.and_utc(),
             user_name: value.user_name,
         }
     }
@@ -167,7 +167,7 @@ mod test {
         let result = result.unwrap();
         assert_eq!(result.first_name, payload.first_name);
         assert_eq!(result.last_name, payload.last_name);
-        assert_eq!(result.password.unwrap(), payload.password);
+        assert_eq!(result.password, payload.password);
         assert_eq!(result.email, payload.email);
     }
     #[test]
@@ -206,14 +206,14 @@ mod test {
             first_name: fr_fr::FirstName().fake(),
             user_name: fr_fr::Name().fake(),
             email: SafeEmail().fake(),
-            password: Some(Password(0..7).fake()),
-            created_at: Utc::now(),
+            password: Password(0..7).fake(),
+            created_at: Utc::now().naive_utc(),
         };
         let x = user.clone().hash_password().unwrap();
-        let binding = x.password.unwrap();
+        let binding = x.password;
         let parsed_hash = PasswordHash::new(&binding).unwrap();
         assert!(Argon2::default()
-            .verify_password(user.password.unwrap().as_bytes(), &parsed_hash)
+            .verify_password(user.password.as_bytes(), &parsed_hash)
             .is_ok());
     }
 }

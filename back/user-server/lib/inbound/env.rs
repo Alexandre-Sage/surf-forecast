@@ -2,12 +2,14 @@
 pub struct Env {
     port: i32,
     host_name: String,
+    pub(crate) database_url: String,
 }
 impl Default for Env {
     fn default() -> Self {
         Self {
             port: 8080,
             host_name: "0.0.0.0".to_string(),
+            database_url: "postgrres://0.0.0.0:5432/user_server".to_string(),
         }
     }
 }

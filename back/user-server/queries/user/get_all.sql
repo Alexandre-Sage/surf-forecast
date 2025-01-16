@@ -1,0 +1,10 @@
+SELECT
+	id, 
+	user_name,
+	email,
+	first_name,
+	last_name,
+	password,
+	created_at
+FROM
+	users;
