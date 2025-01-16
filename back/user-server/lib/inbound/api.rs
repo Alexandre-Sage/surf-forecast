@@ -12,10 +12,11 @@ use crate::{
 use super::{env::Env, handlers::user::create_user};
 
 pub struct Api {
-    router: axum::Router,
+    pub router: axum::Router,
     listener: tokio::net::TcpListener,
 }
 
+#[derive(Debug)]
 pub enum ApiBootError {
     HostBinding(String),
 }
@@ -47,15 +48,13 @@ impl TryFromAsync<Env> for Api {
         });
         let compression_layer = tower_http::compression::CompressionLayer::new();
 
-        let pool = sqlx::PgPool::connect_lazy(&env.database_url).unwrap();
-        let pool = Arc::new(pool);
-        let user_repo = PostgresRepository::new(pool.clone());
+        let user_repo = PostgresRepository::new(env.pool.clone());
         let user_service = UserService::new(user_repo);
         let app_state = ApiState { user_service };
         let app_state = Arc::new(app_state);
         let router = axum::Router::new()
             .route("/ping", get(|| async { "PONG" }))
-            .route("/user", post(create_user))
+            .route("/users", post(create_user))
             .with_state(app_state)
             .layer(trace_layer)
             .layer(compression_layer);

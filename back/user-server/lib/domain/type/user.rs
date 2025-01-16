@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::domain::port::user_repository::UserError;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserPayload {
     user_name: String,
@@ -106,7 +106,7 @@ impl From<User> for UserDto {
     }
 }
 
-#[cfg(test)]
+//#[cfg(test)]
 impl UserPayload {
     pub fn fake() -> Self {
         let pass: String = fake::faker::internet::fr_fr::Password(8..10).fake();

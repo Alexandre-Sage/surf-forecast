@@ -1,3 +1,3 @@
-mod domain;
+pub mod domain;
 pub mod inbound;
 mod outbound;

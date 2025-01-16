@@ -16,6 +16,14 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
             Self::UnprocessableEntity(err) => (StatusCode::BAD_REQUEST, Json(err)).into_response(),
+            Self::InternalServerError(err) => {
+                dbg!(&err);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json("Internal server error"),
+                )
+                    .into_response()
+            }
             _ => todo!(),
         }
     }
