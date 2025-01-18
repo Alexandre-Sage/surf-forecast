@@ -1,8 +1,14 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use async_trait::async_trait;
-use axum::routing::{get, post};
+use axum::{
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Json,
+};
 use internal::{error::api::ApiError, r#async::TryFromAsync};
+use serde::Serialize;
 
 use crate::{
     domain::{port::user_repository::UserRepository, service::user_service::UserService},
@@ -64,7 +70,6 @@ impl TryFromAsync<Env> for Api {
             .map(|listener| Self { listener, router })
     }
 }
-
 impl Api {
     pub async fn start(self) -> Result<(), ApiError> {
         axum::serve(self.listener, self.router)

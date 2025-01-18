@@ -1,7 +1,5 @@
 use argon2::{
-    password_hash::{
-        rand_core::OsRng, PasswordHasher, SaltString,
-    },
+    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
 use chrono::{DateTime, NaiveDateTime, Utc};
@@ -37,13 +35,13 @@ impl UserPayload {
 
 #[derive(Debug, Clone)]
 pub struct User {
-    pub(crate) id: Uuid,
-    pub(crate) user_name: String,
-    pub(crate) email: String,
-    pub(crate) first_name: String,
-    pub(crate) last_name: String,
-    pub(crate) password: String,
-    pub(crate) created_at: NaiveDateTime,
+    pub id: Uuid,
+    pub user_name: String,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub password: String,
+    pub created_at: NaiveDateTime,
 }
 
 impl User {

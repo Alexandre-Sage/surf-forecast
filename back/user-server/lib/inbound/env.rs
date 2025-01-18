@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Env {
     port: i32,
     host_name: String,
