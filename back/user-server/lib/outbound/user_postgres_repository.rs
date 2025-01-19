@@ -31,4 +31,10 @@ impl UserRepository for PostgresRepository {
         .map_err(|e| UserError::Uncontroled(e.to_string()))?;
         Ok(())
     }
+    async fn get_by_email(&self, email: &str) -> Result<Option<User>, UserError> {
+        sqlx::query_file_as!(User, "queries/user/get_by.sql", email.to_owned())
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| UserError::Uncontroled(e.to_string()))
+    }
 }

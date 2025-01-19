@@ -1,14 +1,16 @@
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
-    Argon2,
-};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use fake::Fake;
-use internal::error::api::ApiError;
+use internal::{api::jwt::Claims, crypto::hash_to_string};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::domain::port::user_repository::UserError;
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct LoginPayload {
+    pub password: String,
+    pub email: String,
+}
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -45,13 +47,9 @@ pub struct User {
 }
 
 impl User {
-    pub(crate) fn hash_password(self) -> Result<Self, ApiError> {
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
-        let password_hash = argon2
-            .hash_password(self.password.as_bytes(), &salt)
-            .map_err(|err| ApiError::InternalServerError(err.to_string()))?
-            .to_string();
+    pub(crate) fn hash_password(self) -> Result<Self, UserError> {
+        let password_hash =
+            hash_to_string(self.password).map_err(|err| UserError::Uncontroled(err.to_string()))?;
         Ok(Self {
             password: password_hash,
             id: self.id,
@@ -64,12 +62,12 @@ impl User {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UserDto {
     id: Uuid,
     user_name: String,
-    email: String,
+    pub email: String,
     first_name: String,
     last_name: String,
     created_at: DateTime<Utc>,
@@ -79,7 +77,7 @@ impl TryFrom<UserPayload> for User {
     type Error = UserError;
     fn try_from(value: UserPayload) -> Result<Self, Self::Error> {
         value.validate_password()?;
-        Ok(Self {
+        let user = Self {
             id: Uuid::new_v4(),
             user_name: value.user_name,
             first_name: value.first_name,
@@ -87,7 +85,8 @@ impl TryFrom<UserPayload> for User {
             last_name: value.last_name,
             created_at: Utc::now().naive_utc(),
             password: value.password,
-        })
+        };
+        user.hash_password()
     }
 }
 
@@ -139,10 +138,19 @@ impl UserPayload {
             confirm_password: pass.clone(),
         }
     }
+    pub fn fake_without_mail_and_pass(email: &str, pass: &str) -> Self {
+        UserPayload {
+            last_name: fake::faker::name::fr_fr::LastName().fake(),
+            first_name: fake::faker::name::fr_fr::FirstName().fake(),
+            user_name: fake::faker::name::fr_fr::Name().fake(),
+            email: email.to_owned(),
+            password: pass.to_owned(),
+            confirm_password: pass.to_owned(),
+        }
+    }
 }
 #[cfg(test)]
 mod test {
-    use argon2::{Argon2, PasswordHash, PasswordVerifier};
     use chrono::Utc;
     use fake::{
         faker::{
@@ -151,6 +159,7 @@ mod test {
         },
         Fake,
     };
+    use internal::crypto::verify_hash;
     use uuid::Uuid;
 
     use crate::domain::port::user_repository::UserError;
@@ -165,7 +174,6 @@ mod test {
         let result = result.unwrap();
         assert_eq!(result.first_name, payload.first_name);
         assert_eq!(result.last_name, payload.last_name);
-        assert_eq!(result.password, payload.password);
         assert_eq!(result.email, payload.email);
     }
     #[test]
@@ -208,10 +216,7 @@ mod test {
             created_at: Utc::now().naive_utc(),
         };
         let x = user.clone().hash_password().unwrap();
-        let binding = x.password;
-        let parsed_hash = PasswordHash::new(&binding).unwrap();
-        assert!(Argon2::default()
-            .verify_password(user.password.as_bytes(), &parsed_hash)
-            .is_ok());
+        let hash = x.password;
+        assert!(verify_hash(&hash, user.password))
     }
 }

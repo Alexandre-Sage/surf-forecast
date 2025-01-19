@@ -10,6 +10,7 @@ pub enum UserError {
     PasswordLength,
     UserNameTaken,
     EmailExist,
+    AuthError,
 }
 
 impl From<UserError> for ApiError {
@@ -22,6 +23,7 @@ impl From<UserError> for ApiError {
             UserError::PasswordLength => Self::UnprocessableEntity("PASSWORD_LENGTH".to_string()),
             UserError::EmailExist => Self::UnprocessableEntity("EMAIL_EXIST".to_string()),
             UserError::UserNameTaken => Self::UnprocessableEntity("USERNAME_TAKEN".to_string()),
+            UserError::AuthError => Self::Unauthorized("AUTHENTICATION_FAILED".to_string()),
         }
     }
 }
@@ -30,4 +32,5 @@ impl From<UserError> for ApiError {
 pub trait UserRepository {
     async fn insert(&self, user: User) -> Result<(), UserError>;
     async fn get_all(&self) -> Result<Vec<User>, UserError>;
+    async fn get_by_email(&self, email: &str) -> Result<Option<User>, UserError>;
 }

@@ -15,7 +15,10 @@ use crate::{
     outbound::postgres_repository::PostgresRepository,
 };
 
-use super::{env::Env, handlers::user::create_user};
+use super::{
+    env::Env,
+    handlers::user::{authenticate_user, create_user},
+};
 
 pub struct Api {
     pub router: axum::Router,
@@ -61,6 +64,7 @@ impl TryFromAsync<Env> for Api {
         let router = axum::Router::new()
             .route("/ping", get(|| async { "PONG" }))
             .route("/users", post(create_user))
+            .route("/users/authenticate", post(authenticate_user))
             .with_state(app_state)
             .layer(trace_layer)
             .layer(compression_layer);

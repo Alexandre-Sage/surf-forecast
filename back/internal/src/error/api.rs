@@ -5,6 +5,7 @@ pub enum ApiError {
     InternalServerError(String),
     UnprocessableEntity(String),
     BootError(String),
+    Unauthorized(String),
 }
 
 impl From<std::io::Error> for ApiError {
@@ -17,13 +18,14 @@ impl IntoResponse for ApiError {
         match self {
             Self::UnprocessableEntity(err) => (StatusCode::BAD_REQUEST, Json(err)).into_response(),
             Self::InternalServerError(err) => {
-                dbg!(&err);
+                tracing::error!(err);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json("Internal server error"),
                 )
-                    .into_response()
             }
+            .into_response(),
+            Self::Unauthorized(err) => (StatusCode::UNAUTHORIZED, Json(err)).into_response(),
             _ => todo!(),
         }
     }

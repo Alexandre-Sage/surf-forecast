@@ -1,6 +1,11 @@
+use internal::{
+    api::jwt::{encode_jwt, Claims},
+    crypto::verify_hash,
+};
+
 use crate::domain::{
     port::user_repository::{UserError, UserRepository},
-    r#type::user::{User, UserPayload},
+    r#type::user::{User, UserDto, UserPayload},
 };
 
 pub struct UserService<R>
@@ -30,15 +35,38 @@ where
         }
         self.repository.insert(user).await
     }
+
+    pub async fn authenticate(
+        &self,
+        email: &str,
+        password: &str,
+    ) -> Result<(UserDto, String), UserError> {
+        let user = self.repository.get_by_email(email).await?;
+        match user {
+            Some(user) => {
+                let hash = user.password.as_str();
+                if verify_hash(hash, password) {
+                    let user_dto = UserDto::from(user); //user.into();
+                    let token = encode_jwt(&user_dto, "secret")
+                        .map_err(|e| UserError::Uncontroled(e.to_string()))?;
+                    Ok((user_dto, token))
+                } else {
+                    Err(UserError::AuthError)
+                }
+            }
+            None => Err(UserError::AuthError),
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
     use async_trait::async_trait;
+    use internal::api::jwt::{decode_jwt, Claims};
 
     use crate::domain::{
         port::user_repository::{UserError, UserRepository},
-        r#type::user::{User, UserPayload},
+        r#type::user::{User, UserDto, UserPayload},
     };
 
     use super::UserService;
@@ -67,6 +95,17 @@ mod test {
             );
             Ok(users)
         }
+        async fn get_by_email(&self, email: &str) -> Result<Option<User>, UserError> {
+            let user: User =
+                UserPayload::fake_without_mail_and_pass("hello@world.com", "helloworld")
+                    .try_into()
+                    .unwrap();
+            if user.email == email {
+                Ok(Some(user))
+            } else {
+                Ok(None)
+            }
+        }
     }
     #[tokio::test]
     async fn should_create_user() {
@@ -79,7 +118,7 @@ mod test {
     #[tokio::test]
     async fn should_throw_email_error() {
         let repo = FakeUserRepo;
-        let service = UserService::new(repo.clone());
+        let service = UserService::new(repo);
         let payload = UserPayload::fake_without_mail("hello@world.com".to_string());
         let result = service.insert(payload).await.unwrap_err();
         assert_eq!(result, UserError::EmailExist)
@@ -87,9 +126,38 @@ mod test {
     #[tokio::test]
     async fn should_throw_username_error() {
         let repo = FakeUserRepo;
-        let service = UserService::new(repo.clone());
+        let service = UserService::new(repo);
         let payload = UserPayload::fake_without_user_name("helloworld".to_string());
         let result = service.insert(payload).await.unwrap_err();
         assert_eq!(result, UserError::UserNameTaken)
+    }
+    #[tokio::test]
+    async fn should_authenticate_user() {
+        let repo = FakeUserRepo;
+        let service = UserService::new(repo);
+        let email = "hello@world.com";
+        let pass = "helloworld";
+        let result = service.authenticate(email, pass).await;
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result.0.email, email.to_string());
+        let x = decode_jwt::<Claims<UserDto>, _>(result.1.as_str(), "secret").unwrap();
+        //assert!()
+    }
+    #[tokio::test]
+    async fn should_failed_for_unknown_mail() {
+        let repo = FakeUserRepo;
+        let service = UserService::new(repo);
+        let email = "heo@world.com";
+        let result = service.authenticate(email, "helloworld").await.unwrap_err();
+        assert_eq!(result, UserError::AuthError)
+    }
+    #[tokio::test]
+    async fn should_failed_for_password_mismatch() {
+        let repo = FakeUserRepo;
+        let service = UserService::new(repo);
+        let email = "hello@world.com";
+        let result = service.authenticate(email, "xyz").await.unwrap_err();
+        assert_eq!(result, UserError::AuthError)
     }
 }
