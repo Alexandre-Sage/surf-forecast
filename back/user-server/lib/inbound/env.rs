@@ -7,6 +7,7 @@ pub struct Env {
     port: i32,
     host_name: String,
     pub pool: Arc<PgPool>,
+    pub secret: String,
 }
 impl Default for Env {
     fn default() -> Self {
@@ -19,16 +20,18 @@ impl Default for Env {
                 )
                 .unwrap(),
             ),
+            secret: "secret".to_string(),
         }
     }
 }
 
 impl Env {
-    pub fn new(port: i32, host_name: String, database_url: String) -> Self {
+    pub fn new(port: i32, host_name: String, database_url: String, secret: String) -> Self {
         Self {
             port,
             host_name,
             pool: sqlx::PgPool::connect_lazy(&database_url).unwrap().into(),
+            secret,
         }
     }
 

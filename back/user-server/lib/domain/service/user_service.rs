@@ -40,6 +40,7 @@ where
         &self,
         email: &str,
         password: &str,
+        secret: &str,
     ) -> Result<(UserDto, String), UserError> {
         let user = self.repository.get_by_email(email).await?;
         match user {
@@ -47,7 +48,7 @@ where
                 let hash = user.password.as_str();
                 if verify_hash(hash, password) {
                     let user_dto = UserDto::from(user); //user.into();
-                    let token = encode_jwt(&user_dto, "secret")
+                    let token = encode_jwt(&user_dto, secret)
                         .map_err(|e| UserError::Uncontroled(e.to_string()))?;
                     Ok((user_dto, token))
                 } else {
@@ -137,11 +138,11 @@ mod test {
         let service = UserService::new(repo);
         let email = "hello@world.com";
         let pass = "helloworld";
-        let result = service.authenticate(email, pass).await;
+        let result = service.authenticate(email, pass, "secret").await;
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result.0.email, email.to_string());
-        let x = decode_jwt::<Claims<UserDto>, _>(result.1.as_str(), "secret").unwrap();
+        assert!(decode_jwt::<Claims<UserDto>, _>(result.1.as_str(), "secret").is_ok());
         //assert!()
     }
     #[tokio::test]
@@ -149,7 +150,10 @@ mod test {
         let repo = FakeUserRepo;
         let service = UserService::new(repo);
         let email = "heo@world.com";
-        let result = service.authenticate(email, "helloworld").await.unwrap_err();
+        let result = service
+            .authenticate(email, "helloworld", "secret")
+            .await
+            .unwrap_err();
         assert_eq!(result, UserError::AuthError)
     }
     #[tokio::test]
@@ -157,7 +161,10 @@ mod test {
         let repo = FakeUserRepo;
         let service = UserService::new(repo);
         let email = "hello@world.com";
-        let result = service.authenticate(email, "xyz").await.unwrap_err();
+        let result = service
+            .authenticate(email, "xyz", "secret")
+            .await
+            .unwrap_err();
         assert_eq!(result, UserError::AuthError)
     }
 }

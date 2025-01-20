@@ -31,7 +31,12 @@ pub async fn test_env(
         "postgres://postgres:postgres@127.0.0.1:{}/postgres",
         container.get_host_port_ipv4(5432).await.unwrap()
     );
-    let env = Env::new(8080, "0.0.0.0".to_string(), database_url);
+    let env = Env::new(
+        8080,
+        "0.0.0.0".to_string(),
+        database_url,
+        "secret".to_string(),
+    );
     let pool = env.pool.clone();
     migrate!().run(&*env.pool).await.unwrap();
     let app = Api::try_from_async(env).await.unwrap();

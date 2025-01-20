@@ -43,6 +43,7 @@ where
     U: UserRepository,
 {
     pub user_service: UserService<U>,
+    pub secret: String,
 }
 
 #[async_trait]
@@ -59,7 +60,10 @@ impl TryFromAsync<Env> for Api {
 
         let user_repo = PostgresRepository::new(env.pool.clone());
         let user_service = UserService::new(user_repo);
-        let app_state = ApiState { user_service };
+        let app_state = ApiState {
+            user_service,
+            secret: env.secret,
+        };
         let app_state = Arc::new(app_state);
         let router = axum::Router::new()
             .route("/ping", get(|| async { "PONG" }))
