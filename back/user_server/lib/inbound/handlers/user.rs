@@ -25,7 +25,11 @@ pub async fn authenticate_user<U: UserRepository>(
 ) -> Result<ApiSuccess<(UserDto, String)>, ApiError> {
     let user_dto = state
         .user_service
-        .authenticate(payload.email.as_str(), payload.password.as_str())
+        .authenticate(
+            payload.email.as_str(),
+            payload.password.as_str(),
+            &state.secret,
+        )
         .await?;
     Ok(ApiSuccess::new(StatusCode::OK, user_dto))
 }

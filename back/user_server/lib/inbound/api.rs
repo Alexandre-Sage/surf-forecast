@@ -62,7 +62,7 @@ impl TryFromAsync<Env> for Api {
         let user_service = UserService::new(user_repo);
         let app_state = ApiState {
             user_service,
-            secret: env.secret,
+            secret: env.secret.clone(),
         };
         let app_state = Arc::new(app_state);
         let router = axum::Router::new()

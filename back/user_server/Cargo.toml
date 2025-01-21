@@ -1,5 +1,5 @@
 [package]
-name = "user-server"
+name = "user_server"
 version = "0.1.0"
 edition = "2021"
 
