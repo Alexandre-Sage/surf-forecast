@@ -1,4 +1,5 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
+use serde_json::json;
 
 #[derive(Debug, Clone)]
 pub enum ApiError {
@@ -16,16 +17,20 @@ impl From<std::io::Error> for ApiError {
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::UnprocessableEntity(err) => (StatusCode::BAD_REQUEST, Json(err)).into_response(),
+            Self::UnprocessableEntity(err) => {
+                (StatusCode::BAD_REQUEST, Json(json!({"error":err}))).into_response()
+            }
             Self::InternalServerError(err) => {
                 tracing::error!(err);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    Json("Internal server error"),
+                    Json(json!({"error":"Internal server error"})),
                 )
             }
             .into_response(),
-            Self::Unauthorized(err) => (StatusCode::UNAUTHORIZED, Json(err)).into_response(),
+            Self::Unauthorized(err) => {
+                (StatusCode::UNAUTHORIZED, Json(json!({"error":err}))).into_response()
+            }
             _ => todo!(),
         }
     }

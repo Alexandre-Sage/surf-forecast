@@ -2,8 +2,10 @@ import {
   Button,
   ButtonProps,
   Dialog as ChakraDialog,
+  DialogContext,
   DialogRootProps,
   Portal,
+  UseDialogReturn,
 } from "@chakra-ui/react";
 import { CloseButton } from "./close-button";
 import * as React from "react";
@@ -99,7 +101,7 @@ export const Dialog = (props: DialogProps) => {
 };
 
 interface DialogWithButtonProps extends DialogProps {
-  onSave: (_: unknown) => unknown;
+  onSave: (_: UseDialogReturn) => unknown;
 }
 export const DialogWithButton = (props: DialogWithButtonProps) => {
   const { t } = useTranslation();
@@ -118,9 +120,16 @@ export const DialogWithButton = (props: DialogWithButtonProps) => {
           <DialogActionTrigger asChild>
             <Button variant="outline">Cancel</Button>
           </DialogActionTrigger>
-          <Button onClick={props.onSave} colorPalette={"teal"}>
-            Save
-          </Button>
+          <DialogContext>
+            {(store) => (
+              <Button
+                onClick={(x) => props.onSave(store)}
+                colorPalette={"teal"}
+              >
+                Save
+              </Button>
+            )}
+          </DialogContext>
         </DialogFooter>
         <DialogCloseTrigger />
       </DialogContent>

@@ -49,11 +49,7 @@ interface DialogUserForm extends UserFormProps {
 }
 export const DialogUserForm = (props: DialogUserForm) => {
   const [user, setUser] = useState<UserPayload>({} as UserPayload);
-  const { mutate } = useSaveUser();
-  const onSave = async () => {
-    mutate(user);
-    setUser({} as UserPayload);
-  };
+  const { mutateAsync } = useSaveUser();
   const tips = (
     <Fragment>
       <Translated>press_tab_tips</Translated>
@@ -63,7 +59,7 @@ export const DialogUserForm = (props: DialogUserForm) => {
   return (
     <DialogWithButton
       triggerTitle={props.triggerButtonTitle}
-      onSave={onSave}
+      onSave={(_) => mutateAsync(user).then(() => _.setOpen(false))}
       triggerButtonProps={{ width: "10vw" }}
     >
       <Form

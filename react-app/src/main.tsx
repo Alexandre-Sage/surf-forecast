@@ -17,6 +17,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router";
+import { Toaster } from "./components/ui/toaster";
 const config = defineConfig({
   theme: {
     tokens: {
@@ -33,6 +34,7 @@ createRoot(document.getElementById("root")!).render(
       <ColorModeProvider defaultTheme="dark">
         <Theme colorPalette="teal">
           <QueryClientProvider client={queryClient}>
+            <Toaster />
             <App />
           </QueryClientProvider>
         </Theme>

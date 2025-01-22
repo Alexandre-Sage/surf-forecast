@@ -6,5 +6,12 @@
   "password": "Mot de passe",
   "confirm_password": "Confirmation mot de passe",
   "press_tab_tips": "Tips press tab to switch quickly between inputs",
-  "collect_data_info": "We don't collect any data here"
+  "collect_data_info": "We don't collect any data here",
+  "success": "Succès",
+  "error": "Erreur",
+  "user_created": "Utilisateur créer",
+  "EMAIL_EXIST": "Cet email est déjà associé à un compte. Veuillez utiliser un autre email.",
+  "USERNAME_TAKEN": "Ce nom d'utilisateur est déjà pris. Veuillez en choisir un autre.",
+  "PASSWORD_LENGTH": "Votre mot de passe est trop court. Veuillez choisir un mot de passe d'au moins 8 caractères.",
+  "PASSWORD_MISMATCH": "Les mots de passe ne correspondent pas. Veuillez vous assurer que les deux mots de passe sont identiques."
 }
