@@ -1,7 +1,44 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+  "compilerOptions": {
+    "target": "ES2020", // Set ECMAScript target version
+    "lib": ["dom", "dom.iterable", "esnext"], // Include libraries for modern web APIs and ES features
+    "allowJs": true, // Allow JavaScript files to be compiled
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "esModuleInterop": true, // Enable compatibility with CommonJS modules
+    "allowSyntheticDefaultImports": true, // Allow default imports for modules without default exports
+    "strict": true, // Enable all strict type-checking options
+    "forceConsistentCasingInFileNames": true, // Ensure file names are case-sensitive
+    "module": "ESNext", // Use the latest module system for better tree-shaking and optimization
+    "moduleResolution": "bundler", // Use Node.js module resolution
+    "resolveJsonModule": true, // Allow importing JSON files as modules
+    "isolatedModules": true, // Ensure each file can be safely transpiled independently
+    "jsx": "react-jsx", // Use the new JSX transform from React 17+
+    "strictFunctionTypes": true, // Enable strict checking of function types
+    "noUnusedLocals": true, // Flag unused local variables
+    "noUnusedParameters": true, // Flag unused parameters
+    "noImplicitReturns": true, // Ensure all functions have a return value or explicit return
+    "noImplicitAny": true, // Prevent variables from being implicitly 'any'
+    "baseUrl": "./", // Set the base URL for module resolution
+    "paths": {
+      "@/*": ["src/*"] // Alias for the 'src' folder for cleaner imports
+    }
+  },
+  "include": [
+    "src/**/*", // Include all files inside the src directory
+    "src/**/*.tsx", // Include TypeScript and JSX files
+    "src/**/*.ts" // Include TypeScript files
+  ],
+  "exclude": [
+    "node_modules", // Exclude the node_modules folder
+    "build", // Exclude the build directory
+    "dist" // Exclude the dist directory
   ]
 }
+
+//{
+//  "files": [],
+//  "references": [
+//    { "path": "./tsconfig.app.json" },
+//    { "path": "./tsconfig.node.json" }
+//  ]
+//}

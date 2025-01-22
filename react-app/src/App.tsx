@@ -1,18 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import React from "react"
-import { Box } from "@chakra-ui/react"
+import { Fragment } from "react";
+import { Page } from "./components/ui";
+import { DialogUserForm } from "./components/user";
+import { Group } from "@chakra-ui/react";
+
+type ObjectValue<T> = T[keyof T];
+
+export const LoginPage = () => {
+  return (
+    <Page title="welcome">
+      <Fragment>
+        <Group>
+          <DialogUserForm triggerButtonTitle="Sign up" title="New User" />
+        </Group>
+      </Fragment>
+    </Page>
+  );
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-	  <React.Fragment>
-<Box>Hello world</Box>
-	  </React.Fragment>
-  )
+  return <LoginPage />;
 }
 
-export default App
+export default App;

@@ -1,0 +1,5 @@
+[tasks.docker]
+command = "cargo"
+args = ["make", "--makefile", "user_server/Makefile.toml","-t", "docker-build"]
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true

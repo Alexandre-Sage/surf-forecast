@@ -9,6 +9,7 @@ use axum::{
 };
 use internal::{error::api::ApiError, r#async::TryFromAsync};
 use serde::Serialize;
+use tracing_subscriber::fmt::layer;
 
 use crate::{
     domain::{port::user_repository::UserRepository, service::user_service::UserService},
@@ -57,7 +58,7 @@ impl TryFromAsync<Env> for Api {
             tracing::info_span!("new_request",method = ?req.method(), uri= req.uri().to_string(), from = ip)
         });
         let compression_layer = tower_http::compression::CompressionLayer::new();
-
+        let cors = tower_http::cors::CorsLayer::permissive();
         let user_repo = PostgresRepository::new(env.pool.clone());
         let user_service = UserService::new(user_repo);
         let app_state = ApiState {
@@ -71,7 +72,8 @@ impl TryFromAsync<Env> for Api {
             .route("/users/authenticate", post(authenticate_user))
             .with_state(app_state)
             .layer(trace_layer)
-            .layer(compression_layer);
+            .layer(compression_layer)
+            .layer(cors);
         tokio::net::TcpListener::bind(env.host())
             .await
             .map_err(|e| Self::Error::HostBinding(e.to_string()))

@@ -1,7 +1,4 @@
-FROM   archlinux:latest AS builder
-RUN pacman -Sy --noconfirm
-RUN pacman -S postgresql rustup base-devel sqlite --noconfirm
-RUN rustup default stable
+FROM rust:latest AS builder
 ARG PROJECT
 WORKDIR /opt/builder
 COPY . .
