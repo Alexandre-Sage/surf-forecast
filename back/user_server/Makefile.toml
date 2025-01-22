@@ -1,0 +1,19 @@
+[tasks.sqlx-prepare]
+command = "cargo"
+args = ["sqlx","prepare"]
+
+[tasks.docker]
+command = "docker"
+args = [
+    "build",
+    "-f",
+    "../Dockerfile",
+    "--build-arg",
+    "PROJECT=user_server",
+    "-t",
+    "user_server:latest",
+    ".."
+]
+
+[tasks.build-docker]
+dependencies = ["sqlx-prepare", "docker"]
