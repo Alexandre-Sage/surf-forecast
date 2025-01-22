@@ -16,6 +16,7 @@ import {
   QueryClientProvider,
   useQueryClient,
 } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router";
 const config = defineConfig({
   theme: {
     tokens: {
