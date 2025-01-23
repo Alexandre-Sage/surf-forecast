@@ -16,6 +16,7 @@ export const LoginForm = () => {
       triggerTitle="Login"
       onSave={() => mutate(credentials)}
       triggerButtonProps={{ width: "10vw" }}
+      title="Login"
     >
       <Form withButton={false}>
         <TextInput label="email" setValue={setCredentials} field="email" />

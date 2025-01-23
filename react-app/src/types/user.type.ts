@@ -6,3 +6,12 @@ export interface UserPayload {
   firstName: string;
   lastName: string;
 }
+
+export interface User {
+  id: string;
+  userName: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  createdAt: Date;
+}

@@ -13,5 +13,7 @@
   "EMAIL_EXIST": "This email is already associated with an account. Please use a different email.",
   "USERNAME_TAKEN": "This username is already taken. Please choose another one.",
   "PASSWORD_LENGTH": "Your password is too short. Please choose a password with at least 8 characters.",
-  "PASSWORD_MISMATCH": "Your passwords do not match. Please ensure both passwords are the same."
+  "PASSWORD_MISMATCH": "Your passwords do not match. Please ensure both passwords are the same.",
+  "login_sucess": "Welcome {{user}}",
+  "AUTHENTICATION_FAILED": "TODO"
 }
