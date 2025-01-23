@@ -86,6 +86,7 @@ export const Page = (props: PageProps) => {
         flexDir="column"
         width="95vw"
         height="90vh"
+        border="1px solid red"
         //gapY="5"
       >
         <Stack
@@ -106,12 +107,12 @@ export const Page = (props: PageProps) => {
           </Box>
         </Stack>
         <Stack
-          width="fit-content"
-          border="1px solid red"
+          //width="fit-content"
           flexDir="column"
           alignItems="center"
           justifyContent="center"
           height="80vh"
+          width={"75vw"}
         >
           {props.children}
         </Stack>
