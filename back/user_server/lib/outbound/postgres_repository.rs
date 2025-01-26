@@ -1,4 +1,3 @@
-use std::sync::Arc;
 
 pub struct PostgresRepository {
     pub pool: sqlx::PgPool,

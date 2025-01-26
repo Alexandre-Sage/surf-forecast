@@ -1,5 +1,5 @@
 use internal::{
-    api::jwt::{encode_jwt, Claims},
+    api::jwt::encode_jwt,
     crypto::verify_hash,
 };
 

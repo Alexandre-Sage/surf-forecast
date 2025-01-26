@@ -1,14 +1,6 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
-use axum::{
-    body::Body,
-    http::{Request, StatusCode},
-    Router,
-};
-use serde::Serialize;
-use serde_json::json;
-use sqlx::{migrate, PgPool, Postgres};
-use tower::ServiceExt;
+use sqlx::PgPool;
 use user_server::domain::r#type::user::{User, UserPayload};
 
 //pub async fn post_req<T>(router: Router, url: &str, payload: T) -> axum::http::Response<Body>

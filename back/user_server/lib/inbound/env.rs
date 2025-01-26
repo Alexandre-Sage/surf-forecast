@@ -1,6 +1,6 @@
 use internal::api::api::ServerEnv;
 use sqlx::PgPool;
-use std::{ops::Deref, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct Env {

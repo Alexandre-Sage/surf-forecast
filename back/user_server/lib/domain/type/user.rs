@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
 use fake::Fake;
-use internal::{api::jwt::Claims, crypto::hash_to_string};
+use internal::crypto::hash_to_string;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
