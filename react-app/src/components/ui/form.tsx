@@ -15,6 +15,7 @@ export interface FormProps {
   buttonProps?: ButtonProps;
   withButton?: boolean;
 }
+
 export const Form = ({ withButton = true, ...props }: FormProps) => {
   return (
     <Fieldset.Root size="md">

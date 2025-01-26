@@ -1,16 +1,22 @@
-import { test, expect, firefox } from "@playwright/test";
+import { test, expect, firefox, Page } from "@playwright/test";
+import { UserPayload } from "../src/types/user.type";
+import { fakeUser } from "./fixtures/user";
+
+export const signUpTest = async (page: Page, data: UserPayload) => {
+  await page.getByRole("button", { name: "Sign up" }).click();
+  await page.getByLabel("Pseudo").fill(data.userName);
+  await page.getByLabel("Email").fill(data.email);
+  await page.getByLabel("Prénom").fill(data.firstName);
+  await page.getByLabel("Nom", { exact: true }).fill(data.lastName);
+  await page.getByLabel("Mot de passe", { exact: true }).fill(data.password);
+  await page.getByLabel("Confirmation mot de passe").fill(data.confirmPassword);
+};
 
 test("Should fill sign up form and post data successfully", async ({
   page,
 }) => {
   await page.goto("http://localhost:5173/");
-  await page.getByRole("button", { name: "Sign up" }).click();
-  await page.getByLabel("Pseudo").fill("playwright");
-  await page.getByLabel("Email").fill("test@test.com");
-  await page.getByLabel("Prénom").fill("playwright");
-  await page.getByLabel("Nom", { exact: true }).fill("test");
-  await page.getByLabel("Mot de passe", { exact: true }).fill("helloworld");
-  await page.getByLabel("Confirmation mot de passe").fill("helloworld");
+  await signUpTest(page, fakeUser());
   await page.route("**/users", async (_) => {
     return _.fulfill({ body: JSON.stringify({}) });
   });
@@ -22,13 +28,7 @@ test("Should fill sign up form and post data with password mismatch error", asyn
   page,
 }) => {
   await page.goto("http://localhost:5173/");
-  await page.getByRole("button", { name: "Sign up" }).click();
-  await page.getByLabel("Pseudo").fill("playwright");
-  await page.getByLabel("Email").fill("test@test.com");
-  await page.getByLabel("Prénom").fill("playwright");
-  await page.getByLabel("Nom", { exact: true }).fill("test");
-  await page.getByLabel("Mot de passe", { exact: true }).fill("helloworld");
-  await page.getByLabel("Confirmation mot de passe").fill("hellow");
+  await signUpTest(page, fakeUser({ confirmPassword: "xyz" }));
   await page.route("**/users", async (_) => {
     return _.fulfill({
       body: JSON.stringify({ error: "PASSWORD_MISMATCH" }),
@@ -47,13 +47,7 @@ test("Should fill sign up form and post data with password mismatch length", asy
   page,
 }) => {
   await page.goto("http://localhost:5173/");
-  await page.getByRole("button", { name: "Sign up" }).click();
-  await page.getByLabel("Pseudo").fill("playwright");
-  await page.getByLabel("Email").fill("test@test.com");
-  await page.getByLabel("Prénom").fill("playwright");
-  await page.getByLabel("Nom", { exact: true }).fill("test");
-  await page.getByLabel("Mot de passe", { exact: true }).fill("he");
-  await page.getByLabel("Confirmation mot de passe").fill("he");
+  await signUpTest(page, fakeUser({ password: "xyz", confirmPassword: "xyz" }));
   await page.route("**/users", async (_) => {
     return _.fulfill({
       body: JSON.stringify({ error: "PASSWORD_LENGTH" }),
@@ -72,13 +66,7 @@ test("Should fill sign up form and post data with username taken", async ({
   page,
 }) => {
   await page.goto("http://localhost:5173/");
-  await page.getByRole("button", { name: "Sign up" }).click();
-  await page.getByLabel("Pseudo").fill("playwright");
-  await page.getByLabel("Email").fill("test@test.com");
-  await page.getByLabel("Prénom").fill("playwright");
-  await page.getByLabel("Nom", { exact: true }).fill("test");
-  await page.getByLabel("Mot de passe", { exact: true }).fill("he");
-  await page.getByLabel("Confirmation mot de passe").fill("he");
+  await signUpTest(page, fakeUser());
   await page.route("**/users", async (_) => {
     return _.fulfill({
       body: JSON.stringify({ error: "USERNAME_TAKEN" }),
@@ -97,13 +85,7 @@ test("Should fill sign up form and post data with email exist", async ({
   page,
 }) => {
   await page.goto("http://localhost:5173/");
-  await page.getByRole("button", { name: "Sign up" }).click();
-  await page.getByLabel("Pseudo").fill("playwright");
-  await page.getByLabel("Email").fill("test@test.com");
-  await page.getByLabel("Prénom").fill("playwright");
-  await page.getByLabel("Nom", { exact: true }).fill("test");
-  await page.getByLabel("Mot de passe", { exact: true }).fill("he");
-  await page.getByLabel("Confirmation mot de passe").fill("he");
+  await signUpTest(page, fakeUser());
   await page.route("**/users", async (_) => {
     return _.fulfill({
       body: JSON.stringify({ error: "EMAIL_EXIST" }),

@@ -50,6 +50,13 @@ interface DialogUserForm extends UserFormProps {
 export const DialogUserForm = (props: DialogUserForm) => {
   const [user, setUser] = useState<UserPayload>({} as UserPayload);
   const { mutateAsync } = useSaveUser();
+  const actionEnabled =
+    user.confirmPassword &&
+    user.password &&
+    user.firstName &&
+    user.lastName &&
+    user.email &&
+    user.userName;
   const tips = (
     <Fragment>
       <Translated>press_tab_tips</Translated>
@@ -59,7 +66,13 @@ export const DialogUserForm = (props: DialogUserForm) => {
   return (
     <DialogWithButton
       triggerTitle={props.triggerButtonTitle}
-      onSave={(_) => mutateAsync(user).then(() => _.setOpen(false))}
+      actionDisabled={!actionEnabled}
+      onSave={(_) =>
+        mutateAsync(user).then(() => {
+          setUser({} as UserPayload);
+          return _.setOpen(false);
+        })
+      }
       triggerButtonProps={{ width: "10vw" }}
     >
       <Form
@@ -73,24 +86,28 @@ export const DialogUserForm = (props: DialogUserForm) => {
           label={"user_name"}
           setValue={setUser}
           field="userName"
+          required
         />
         <TextInput
           value={user.email}
           label={"email"}
           setValue={setUser}
           field="email"
+          required
         />
         <TextInput
           value={user.firstName}
           label={"first_name"}
           setValue={setUser}
           field="firstName"
+          required
         />
         <TextInput
           value={user.lastName}
           label={"last_name"}
           setValue={setUser}
           field="lastName"
+          required
         />
         <TextInput
           value={user.password}
@@ -98,6 +115,7 @@ export const DialogUserForm = (props: DialogUserForm) => {
           setValue={setUser}
           field="password"
           password
+          required
         />
         <TextInput
           value={user.confirmPassword}
@@ -105,6 +123,7 @@ export const DialogUserForm = (props: DialogUserForm) => {
           setValue={setUser}
           field="confirmPassword"
           password
+          required
         />
       </Form>
     </DialogWithButton>

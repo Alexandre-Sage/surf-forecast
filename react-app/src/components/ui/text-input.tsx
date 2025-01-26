@@ -14,9 +14,7 @@ export interface TextInputProps<T> extends InputProps {
 
 export const TextInput = <T,>(props: TextInputProps<T>) => {
   const { t } = useTranslation();
-  const [localValue, setLocalValue] = useState<string>(
-    (props.value as string) || "",
-  );
+  const [localValue, setLocalValue] = useState<string>(props.value as string);
   const setValue = (value: string) =>
     props.field
       ? props.setValue((prev: T) => ({ ...prev, [props.field!]: value }))

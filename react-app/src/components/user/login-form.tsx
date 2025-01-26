@@ -10,11 +10,11 @@ export const LoginForm = () => {
   const [credentials, setCredentials] = useState<Credentials>(
     {} as Credentials,
   );
-  const { mutate } = useAuthenticateUser();
+  const { mutateAsync } = useAuthenticateUser();
   return (
     <DialogWithButton
       triggerTitle="Login"
-      onSave={() => mutate(credentials)}
+      onSave={(_) => mutateAsync(credentials).then(() => _.setOpen(false))}
       triggerButtonProps={{ width: "10vw" }}
       title="Login"
     >

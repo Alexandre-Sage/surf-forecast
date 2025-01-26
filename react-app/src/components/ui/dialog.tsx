@@ -102,6 +102,7 @@ export const Dialog = (props: DialogProps) => {
 
 interface DialogWithButtonProps extends DialogProps {
   onSave: (_: UseDialogReturn) => unknown;
+  actionDisabled?: boolean;
 }
 export const DialogWithButton = (props: DialogWithButtonProps) => {
   const { t } = useTranslation();
@@ -121,10 +122,11 @@ export const DialogWithButton = (props: DialogWithButtonProps) => {
             <Button variant="outline">Cancel</Button>
           </DialogActionTrigger>
           <DialogContext>
-            {(store) => (
+            {(_) => (
               <Button
-                onClick={(x) => props.onSave(store)}
+                onClick={() => props.onSave(_)}
                 colorPalette={"teal"}
+                disabled={props.actionDisabled}
               >
                 Save
               </Button>

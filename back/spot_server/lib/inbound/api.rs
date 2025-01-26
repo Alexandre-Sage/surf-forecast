@@ -4,15 +4,9 @@ use async_trait::async_trait;
 use axum::routing::{get, post};
 use internal::{error::api::ApiError, r#async::TryFromAsync};
 
-use crate::{
-    domain::{port::user_repository::UserRepository, service::user_service::UserService},
-    outbound::postgres_repository::PostgresRepository,
-};
+use crate::domain::{port::spot_repository::SpotRepository, service::spot_service::SpotService};
 
-use super::{
-    env::Env,
-    handlers::user::{authenticate_user, create_user},
-};
+use super::env::Env;
 
 pub struct Api {
     pub router: axum::Router,
@@ -34,9 +28,9 @@ impl From<ApiBootError> for ApiError {
 
 pub struct ApiState<U>
 where
-    U: UserRepository,
+    U: SpotRepository,
 {
-    pub user_service: UserService<U>,
+    pub spot_service: SpotService<U>,
     pub secret: String,
 }
 
@@ -52,18 +46,16 @@ impl TryFromAsync<Env> for Api {
         });
         let compression_layer = tower_http::compression::CompressionLayer::new();
         let cors = tower_http::cors::CorsLayer::permissive();
-        let user_repo = PostgresRepository::new(env.pool.clone());
-        let user_service = UserService::new(user_repo);
-        let app_state = ApiState {
-            user_service,
-            secret: env.secret.clone(),
-        };
-        let app_state = Arc::new(app_state);
+        //let user_repo = PostgresRepository::new(env.pool.clone());
+        //let user_service = UserService::new(user_repo);
+        //let app_state = ApiState {
+        //    user_service,
+        //    secret: env.secret.clone(),
+        //};
+        //let app_state = Arc::new(app_state);
         let router = axum::Router::new()
             .route("/ping", get(|| async { "PONG" }))
-            .route("/users", post(create_user))
-            .route("/users/authenticate", post(authenticate_user))
-            .with_state(app_state)
+            //.with_state(app_state)
             .layer(trace_layer)
             .layer(compression_layer)
             .layer(cors);
