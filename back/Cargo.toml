@@ -1,5 +1,5 @@
 [workspace]
-members = [ "internal", "spot_server","user_server"]
+members = [ "internal", "spot_server", "test_lib","user_server"]
 resolver = "1"
 [workspace.dependencies]
 async-trait = "0.1.85"

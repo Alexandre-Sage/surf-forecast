@@ -2,7 +2,7 @@ use std::{net::SocketAddr, sync::Arc};
 
 use async_trait::async_trait;
 use axum::routing::{get, post};
-use internal::{error::api::ApiError, r#async::TryFromAsync};
+use internal::{api::api::Server, error::api::ApiError, r#async::TryFromAsync};
 
 use crate::domain::{port::spot_repository::SpotRepository, service::spot_service::SpotService};
 
@@ -65,8 +65,10 @@ impl TryFromAsync<Env> for Api {
             .map(|listener| Self { listener, router })
     }
 }
-impl Api {
-    pub async fn start(self) -> Result<(), ApiError> {
+
+#[async_trait]
+impl Server for Api {
+    async fn start(self) -> Result<(), ApiError> {
         axum::serve(self.listener, self.router)
             .await
             .map_err(|e| ApiError::BootError(e.to_string()))

@@ -1,2 +1,2 @@
-pub mod api_success;
+pub mod api;
 pub mod jwt;

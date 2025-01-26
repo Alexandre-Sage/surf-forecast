@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, Json};
-use internal::{api::api_success::ApiSuccess, error::api::ApiError};
+use internal::{api::api::ApiSuccess, error::api::ApiError};
 
 use crate::{
     domain::{

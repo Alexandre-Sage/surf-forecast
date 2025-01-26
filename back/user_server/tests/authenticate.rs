@@ -1,12 +1,16 @@
 use axum::http::StatusCode;
-use common::{post_req, test_env, users_seeds};
+use common::users_seeds;
 use http_body_util::BodyExt;
-use user_server::domain::r#type::user::{LoginPayload, UserDto};
+use test_lib::{post_req, test_env};
+use user_server::{
+    domain::r#type::user::{LoginPayload, UserDto},
+    inbound::{api::Api, env::Env},
+};
 mod common;
 
 #[tokio::test]
 async fn should_authenticate_user() {
-    let (container, app, pool) = test_env("users").await;
+    let (container, app, pool) = test_env::<Api, Env>("users", "migrations").await;
     let _ = users_seeds(pool.clone()).await;
     let payload = LoginPayload {
         email: "hello@world.com".to_string(),
@@ -23,7 +27,7 @@ async fn should_authenticate_user() {
 
 #[tokio::test]
 async fn should_throw_401_for_unknown_email() {
-    let (container, app, pool) = test_env("users").await;
+    let (container, app, pool) = test_env::<Api, Env>("users", "migrations").await;
     let _ = users_seeds(pool.clone()).await;
     let payload = LoginPayload {
         email: "he@cyz.com".to_string(),
@@ -36,7 +40,7 @@ async fn should_throw_401_for_unknown_email() {
 
 #[tokio::test]
 async fn should_throw_401_for_wrong_pwd() {
-    let (container, app, pool) = test_env("users").await;
+    let (container, app, pool) = test_env::<Api, Env>("users", "migrations").await;
     let _ = users_seeds(pool.clone()).await;
     let payload = LoginPayload {
         email: "hello@world.com".to_string(),

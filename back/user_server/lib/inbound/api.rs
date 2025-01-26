@@ -2,7 +2,11 @@ use std::{net::SocketAddr, sync::Arc};
 
 use async_trait::async_trait;
 use axum::routing::{get, post};
-use internal::{error::api::ApiError, r#async::TryFromAsync};
+use internal::{
+    api::api::{Server, ServerEnv},
+    error::api::ApiError,
+    r#async::TryFromAsync,
+};
 
 use crate::{
     domain::{port::user_repository::UserRepository, service::user_service::UserService},
@@ -13,7 +17,7 @@ use super::{
     env::Env,
     handlers::user::{authenticate_user, create_user},
 };
-
+#[derive(Debug)]
 pub struct Api {
     pub router: axum::Router,
     listener: tokio::net::TcpListener,
@@ -52,7 +56,7 @@ impl TryFromAsync<Env> for Api {
         });
         let compression_layer = tower_http::compression::CompressionLayer::new();
         let cors = tower_http::cors::CorsLayer::permissive();
-        let user_repo = PostgresRepository::new(env.pool.clone());
+        let user_repo = PostgresRepository::new(env.pool());
         let user_service = UserService::new(user_repo);
         let app_state = ApiState {
             user_service,
@@ -73,8 +77,9 @@ impl TryFromAsync<Env> for Api {
             .map(|listener| Self { listener, router })
     }
 }
-impl Api {
-    pub async fn start(self) -> Result<(), ApiError> {
+#[async_trait]
+impl Server for Api {
+    async fn start(self) -> Result<(), ApiError> {
         axum::serve(self.listener, self.router)
             .await
             .map_err(|e| ApiError::BootError(e.to_string()))

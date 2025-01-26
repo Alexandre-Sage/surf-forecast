@@ -11,7 +11,7 @@ use super::postgres_repository::PostgresRepository;
 impl UserRepository for PostgresRepository {
     async fn get_all(&self) -> Result<Vec<User>, UserError> {
         sqlx::query_file_as!(User, "queries/user/get_all.sql")
-            .fetch_all(&*self.pool)
+            .fetch_all(&self.pool)
             .await
             .map_err(|e| UserError::Uncontroled(e.to_string()))
     }
@@ -26,14 +26,14 @@ impl UserRepository for PostgresRepository {
             user.password,
             user.created_at
         )
-        .execute(&*self.pool)
+        .execute(&self.pool)
         .await
         .map_err(|e| UserError::Uncontroled(e.to_string()))?;
         Ok(())
     }
     async fn get_by_email(&self, email: &str) -> Result<Option<User>, UserError> {
         sqlx::query_file_as!(User, "queries/user/get_by.sql", email.to_owned())
-            .fetch_optional(&*self.pool)
+            .fetch_optional(&self.pool)
             .await
             .map_err(|e| UserError::Uncontroled(e.to_string()))
     }

@@ -30,6 +30,7 @@ fake = "3.1.0"
 sqlx = { workspace = true }
 
 [dev-dependencies]
+test_lib = { path = "../test_lib" }
 testcontainers.workspace = true
 http-body-util = "0.1.0"
 testcontainers-modules ={version = "0.11.5", features = ["postgres"]}
