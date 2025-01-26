@@ -1,7 +1,7 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 
 use async_trait::async_trait;
-use axum::routing::{get, post};
+use axum::routing::get;
 use internal::{api::api::Server, error::api::ApiError, r#async::TryFromAsync};
 
 use crate::domain::{port::spot_repository::SpotRepository, service::spot_service::SpotService};

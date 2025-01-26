@@ -1,15 +1,15 @@
-use std::{collections::HashMap, fmt::Debug, path::Path, sync::Arc};
+use std::{fmt::Debug, path::Path};
 
 use axum::{
     body::Body,
-    http::{Request, StatusCode},
+    http::Request,
     Router,
 };
 use internal::api::api::Server;
 use internal::{api::api::ServerEnv, r#async::TryFromAsync};
 use serde::Serialize;
 use serde_json::json;
-use sqlx::{migrate, PgPool, Postgres};
+use sqlx::{migrate, PgPool};
 use testcontainers::runners::AsyncRunner;
 use tower::ServiceExt;
 
