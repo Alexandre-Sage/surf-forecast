@@ -31,6 +31,6 @@ impl From<UserError> for ApiError {
 #[async_trait]
 pub trait UserRepository {
     async fn insert(&self, user: User) -> Result<(), UserError>;
-    async fn get_all(&self) -> Result<Vec<User>, UserError>;
-    async fn get_by_email(&self, email: &str) -> Result<Option<User>, UserError>;
+    async fn all(&self) -> Result<Vec<User>, UserError>;
+    async fn by_email(&self, email: &str) -> Result<Option<User>, UserError>;
 }

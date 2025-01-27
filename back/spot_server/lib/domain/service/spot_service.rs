@@ -23,13 +23,13 @@ where
 
     pub async fn get_all(&self) -> Result<Vec<SpotDto>, SpotError> {
         self.repository
-            .get_all()
+            .all()
             .await
             .map(|spots| spots.into_iter().map(SpotDto::from).collect())
     }
 
     pub async fn get_by_id(&self, id: Uuid) -> Result<SpotDto, SpotError> {
-        let spot = self.repository.get_by_id(id).await?;
+        let spot = self.repository.by_id(id).await?;
         match spot {
             Some(spot) => Ok(spot.into()),
             None => Err(SpotError::NotFound),
@@ -54,10 +54,10 @@ mod test {
     struct FakeRepo;
     #[async_trait]
     impl SpotRepository for FakeRepo {
-        async fn get_all(&self) -> Result<Vec<Spot>, SpotError> {
+        async fn all(&self) -> Result<Vec<Spot>, SpotError> {
             Ok([0..50].iter().map(|_| Spot::fake()).collect())
         }
-        async fn get_by_id(&self, id: Uuid) -> Result<Option<Spot>, SpotError> {
+        async fn by_id(&self, id: Uuid) -> Result<Option<Spot>, SpotError> {
             let spot = Spot::fake_without_id(
                 Uuid::from_str("c8361d79-3bb4-4ef6-a781-95a9be466841").unwrap(),
             );
@@ -72,7 +72,7 @@ mod test {
     #[tokio::test]
     async fn get_all() {
         let repo = FakeRepo;
-        let spots = repo.get_all().await.unwrap();
+        let spots = repo.all().await.unwrap();
         let service = SpotService::new(repo);
         let result = service.get_all().await.unwrap();
         assert_eq!(result.len(), spots.len())

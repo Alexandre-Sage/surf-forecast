@@ -20,6 +20,6 @@ impl From<SpotError> for ApiError {
 
 #[async_trait]
 pub trait SpotRepository {
-    async fn get_all(&self) -> Result<Vec<Spot>, SpotError>;
-    async fn get_by_id(&self, id: Uuid) -> Result<Option<Spot>, SpotError>;
+    async fn all(&self) -> Result<Vec<Spot>, SpotError>;
+    async fn by_id(&self, id: Uuid) -> Result<Option<Spot>, SpotError>;
 }

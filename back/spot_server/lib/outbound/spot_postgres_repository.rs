@@ -11,14 +11,14 @@ use super::postgres_repository::PostgresRepository;
 
 #[async_trait]
 impl SpotRepository for PostgresRepository {
-    async fn get_all(&self) -> Result<Vec<Spot>, SpotError> {
+    async fn all(&self) -> Result<Vec<Spot>, SpotError> {
         const QUERY: &str = "SELECT * FROM spots;";
         sqlx::query_as(QUERY)
             .fetch_all(&self.pool)
             .map_err(|e| SpotError::Uncontrolled(e.to_string()))
             .await
     }
-    async fn get_by_id(&self, id: Uuid) -> Result<Option<Spot>, SpotError> {
+    async fn by_id(&self, id: Uuid) -> Result<Option<Spot>, SpotError> {
         const QUERY: &str = "SELECT * FROM spots WHERE id = $1;";
         sqlx::query_as(QUERY)
             .bind(id)

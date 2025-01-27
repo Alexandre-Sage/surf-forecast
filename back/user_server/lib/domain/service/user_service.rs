@@ -1,7 +1,4 @@
-use internal::{
-    api::jwt::encode_jwt,
-    crypto::verify_hash,
-};
+use internal::{api::jwt::encode_jwt, crypto::verify_hash};
 
 use crate::domain::{
     port::user_repository::{UserError, UserRepository},
@@ -24,7 +21,7 @@ where
     }
     pub async fn insert(&self, payload: UserPayload) -> Result<(), UserError> {
         let user = User::try_from(payload)?;
-        let users = self.repository.get_all().await?;
+        let users = self.repository.all().await?;
         let email_exist = users.iter().find(|u| u.email == user.email);
         let user_name_exist = users.iter().find(|u| u.user_name == user.user_name);
         if let Some(_) = email_exist {
@@ -42,7 +39,7 @@ where
         password: &str,
         secret: &str,
     ) -> Result<(UserDto, String), UserError> {
-        let user = self.repository.get_by_email(email).await?;
+        let user = self.repository.by_email(email).await?;
         match user {
             Some(user) => {
                 let hash = user.password.as_str();
@@ -79,7 +76,7 @@ mod test {
         async fn insert(&self, _user: User) -> Result<(), UserError> {
             Ok(())
         }
-        async fn get_all(&self) -> Result<Vec<User>, UserError> {
+        async fn all(&self) -> Result<Vec<User>, UserError> {
             let mut users: Vec<User> = [0..50]
                 .into_iter()
                 .map(|_| UserPayload::fake().try_into().unwrap())
@@ -96,7 +93,7 @@ mod test {
             );
             Ok(users)
         }
-        async fn get_by_email(&self, email: &str) -> Result<Option<User>, UserError> {
+        async fn by_email(&self, email: &str) -> Result<Option<User>, UserError> {
             let user: User =
                 UserPayload::fake_without_mail_and_pass("hello@world.com", "helloworld")
                     .try_into()
@@ -143,7 +140,6 @@ mod test {
         let result = result.unwrap();
         assert_eq!(result.0.email, email.to_string());
         assert!(decode_jwt::<Claims<UserDto>, _>(result.1.as_str(), "secret").is_ok());
-        //assert!()
     }
     #[tokio::test]
     async fn should_failed_for_unknown_mail() {
