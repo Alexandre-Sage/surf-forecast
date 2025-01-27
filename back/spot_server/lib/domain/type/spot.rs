@@ -1,23 +1,25 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use fake::Fake;
+use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, FromRow)]
 pub struct Spot {
     pub id: Uuid,
-    name: String,
-    windguru_id: Option<i32>,
-    longitude: f32,
-    latitude: f32,
-    created_at: DateTime<chrono::Utc>,
+    pub name: String,
+    pub windguru_id: Option<i32>,
+    pub longitude: f64,
+    pub latitude: f64,
+    pub created_at: NaiveDateTime,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct SpotDto {
     pub(crate) id: Uuid,
     name: String,
-    longitude: f32,
-    latitude: f32,
+    longitude: f64,
+    latitude: f64,
 }
 
 impl From<Spot> for SpotDto {
@@ -38,7 +40,7 @@ impl Spot {
             longitude: fake::faker::address::fr_fr::Longitude().fake(),
             latitude: fake::faker::address::fr_fr::Latitude().fake(),
             windguru_id: None,
-            created_at: Utc::now(),
+            created_at: Utc::now().naive_utc(),
         }
     }
     pub fn fake_without_id(id: Uuid) -> Self {
@@ -48,7 +50,7 @@ impl Spot {
             longitude: fake::faker::address::fr_fr::Longitude().fake(),
             latitude: fake::faker::address::fr_fr::Latitude().fake(),
             windguru_id: None,
-            created_at: Utc::now(),
+            created_at: Utc::now().naive_utc(),
         }
     }
 }

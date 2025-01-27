@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS spots (
     id uuid PRIMARY KEY UNIQUE NOT NULL,
     name varchar(100) UNIQUE NOT NULL,
     windguru_id integer UNIQUE,
-    latitude decimal,
-    longitude decimal,
+    latitude float8 NOT NULL,
+    longitude float8 NOT NULL,
     created_at timestamp NOT NULL
 );

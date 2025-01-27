@@ -1,12 +1,22 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
 use async_trait::async_trait;
 use axum::routing::get;
-use internal::{api::api::Server, error::api::ApiError, r#async::TryFromAsync};
+use internal::{
+    api::api::{Server, ServerEnv},
+    error::api::ApiError,
+    r#async::TryFromAsync,
+};
 
-use crate::domain::{port::spot_repository::SpotRepository, service::spot_service::SpotService};
+use crate::{
+    domain::{port::spot_repository::SpotRepository, service::spot_service::SpotService},
+    outbound::postgres_repository::PostgresRepository,
+};
 
-use super::env::Env;
+use super::{
+    env::Env,
+    handlers::spot::{get_all_spots, get_spot},
+};
 
 pub struct Api {
     pub router: axum::Router,
@@ -46,16 +56,18 @@ impl TryFromAsync<Env> for Api {
         });
         let compression_layer = tower_http::compression::CompressionLayer::new();
         let cors = tower_http::cors::CorsLayer::permissive();
-        //let user_repo = PostgresRepository::new(env.pool.clone());
-        //let user_service = UserService::new(user_repo);
-        //let app_state = ApiState {
-        //    user_service,
-        //    secret: env.secret.clone(),
-        //};
-        //let app_state = Arc::new(app_state);
+        let spot_repo = PostgresRepository::new(env.pool());
+        let spot_service = SpotService::new(spot_repo);
+        let app_state = ApiState {
+            spot_service,
+            secret: env.secret.clone(),
+        };
+        let app_state = Arc::new(app_state);
         let router = axum::Router::new()
             .route("/ping", get(|| async { "PONG" }))
-            //.with_state(app_state)
+            .route("/spots", get(get_all_spots))
+            .route("/spots/{id}", get(get_spot))
+            .with_state(app_state)
             .layer(trace_layer)
             .layer(compression_layer)
             .layer(cors);
