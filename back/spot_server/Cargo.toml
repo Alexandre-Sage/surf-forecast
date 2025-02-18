@@ -29,6 +29,7 @@ chrono = { workspace = true }
 fake = "3.1.0"
 sqlx = { workspace = true }
 reqwest = { workspace = true }
+redis = { workspace = true }
 [dev-dependencies]
 test_lib = { path = "../test_lib" }
 testcontainers.workspace = true

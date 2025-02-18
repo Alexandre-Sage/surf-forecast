@@ -40,7 +40,7 @@ impl<S: Serializer + Send + Sync> Cache for RedisCache<S> {
             .await
     }
 
-    async fn get<T>(&mut self, key: &str) -> Result<Option<T>, Self::Error>
+    async fn get<T>(&self, key: &str) -> Result<Option<T>, Self::Error>
     where
         T: for<'de> Deserialize<'de> + Send + Sync,
     {

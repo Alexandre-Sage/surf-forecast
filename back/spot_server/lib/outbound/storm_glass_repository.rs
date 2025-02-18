@@ -1,10 +1,11 @@
-use std::{collections::HashMap, i16};
-
-use async_trait::async_trait;
-use axum::routing::trace_service;
-use futures::{FutureExt, TryFutureExt};
-use reqwest::{header, Method, StatusCode};
-use tracing::span;
+use std::{
+    collections::HashMap,
+    i16,
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
+use tokio::sync::RwLock;
+use tracing_subscriber::filter::FilterExt;
 
 use crate::domain::{
     port::forecast_repository::{ForecastError, ForecastRepository},
@@ -12,7 +13,14 @@ use crate::domain::{
         tide_forecast::StormGlassTideForecast, weather_forecast::StormGlassWeatherForecast,
     },
 };
-#[derive(Clone)]
+use async_trait::async_trait;
+use axum::routing::trace_service;
+use futures::{FutureExt, TryFutureExt};
+use internal::cache::port::Cache;
+use reqwest::{header, Method, StatusCode};
+use serde::{Deserialize, Serialize};
+use tracing::span;
+#[derive(Clone, Serialize, Deserialize)]
 pub struct StormGlassKey {
     key: String,
     count: i16,
@@ -35,44 +43,22 @@ impl AsRef<str> for StormGlassKey {
 }
 pub struct StormGlassKeys(Vec<StormGlassKey>);
 
-impl StormGlassKeys {
-    pub fn new() -> Self {
-        Self(
-            API_KEYS
-                .into_iter()
-                .map(|key| StormGlassKey::new(key.to_string(), 0))
-                .collect(),
-        )
-    }
-    pub fn select_key(&mut self) -> String {
-        self.0
-            .iter_mut()
-            .find(|key| key.is_valid())
-            .map(|key| {
-                key.increment();
-                key.clone().key
-            })
-            .unwrap()
-    }
-}
-const API_KEYS: [&str; 5] = [
-    "bf91a76a-8545-11ee-8fd1-0242ac130002-bf91a7d8-8545-11ee-8fd1-0242ac130002",
-    "9a90a39c-86cd-11ee-8fd1-0242ac130002-9a90a414-86cd-11ee-8fd1-0242ac130002",
-    "82cf2668-86df-11ee-8fd1-0242ac130002-82cf26d6-86df-11ee-8fd1-0242ac130002",
-    "b772d770-86df-11ee-935b-0242ac130002-b772d81a-86df-11ee-935b-0242ac130002",
-    "aa2398a4-b1f3-11ee-950b-0242ac130002-aa239962-b1f3-11ee-950b-0242ac130002",
-];
-
-pub struct StormGlassRepository {
+pub struct StormGlassRepository<C>
+where
+    C: Cache,
+{
     base_url: String,
-    api_keys: StormGlassKeys,
+    cache: Arc<RwLock<C>>,
 }
 
-impl StormGlassRepository {
-    pub fn new() -> Self {
+impl<C> StormGlassRepository<C>
+where
+    C: Cache,
+{
+    pub fn new(cache: Arc<RwLock<C>>) -> Self {
         Self {
             base_url: "https://api.stormglass.io".to_string(),
-            api_keys: StormGlassKeys::new(),
+            cache,
         }
     }
 
@@ -90,10 +76,47 @@ impl StormGlassRepository {
             self.base_url, lat, lng, end
         )
     }
+
+    async fn update_keys(
+        &self,
+        key: &str,
+        keys: &mut HashMap<String, StormGlassKey>,
+    ) -> Result<(), ForecastError> {
+        if let Some(key) = keys.get_mut(key) {
+            key.increment();
+        }
+        let mut cache = self.cache.write().await;
+        cache
+            .deref_mut()
+            .set("storm_glass_keys", &keys.values().collect::<Vec<_>>())
+            .map_err(|_| ForecastError::CacheError("UNABLE_TO_UPDATE_KEYS".to_string()))
+            .await
+    }
+
+    async fn keys_from_cache(&self) -> Result<HashMap<String, StormGlassKey>, ForecastError> {
+        let cache = self.cache.read().await;
+        let maybe_keys = cache
+            .get::<Vec<StormGlassKey>>("storm_glass_keys")
+            .await
+            .map_err(|e| {
+                println!("{:#?}", e);
+                ForecastError::CacheError("UNABLE_TO_FETCH_KEYS_FROM_CACHE".to_owned())
+            })?;
+        maybe_keys
+            .map(|keys| {
+                keys.into_iter()
+                    .map(|key: StormGlassKey| (key.key.clone(), key))
+                    .collect()
+            })
+            .ok_or(ForecastError::Uncontrolled("NO_KEYS_AVAILABLE".to_string()))
+    }
 }
 
 #[async_trait]
-impl ForecastRepository for StormGlassRepository {
+impl<C> ForecastRepository for StormGlassRepository<C>
+where
+    C: Cache + Send + Sync,
+{
     type WeatherForecast = StormGlassWeatherForecast;
     type TideForecast = StormGlassTideForecast;
     async fn weather_forecast(
@@ -102,9 +125,11 @@ impl ForecastRepository for StormGlassRepository {
         lng: f64,
     ) -> Result<Self::WeatherForecast, ForecastError> {
         let url = self.weather_forecast_url(lat, lng);
+        let mut keys = self.keys_from_cache().await?;
+        let key = keys.values().find(|key| key.is_valid()).unwrap().clone();
         let res = reqwest::Client::new()
             .get(url)
-            .header(header::AUTHORIZATION, self.api_keys.select_key())
+            .header(header::AUTHORIZATION, &key.key)
             .send()
             .map_err(|err| ForecastError::Uncontrolled(err.to_string()))
             .await?;
@@ -113,6 +138,7 @@ impl ForecastRepository for StormGlassRepository {
                 "".to_string(),
             )),
             StatusCode::OK => {
+                self.update_keys(&key.key, &mut keys).await?;
                 res.json()
                     .map_err(|err| ForecastError::Uncontrolled(err.to_string()))
                     .await

@@ -4,6 +4,7 @@ use async_trait::async_trait;
 pub enum ForecastError {
     Uncontrolled(String),
     StormGlassApiKeyMaxRequestReached(String),
+    CacheError(String),
 }
 #[async_trait]
 pub trait ForecastRepository {

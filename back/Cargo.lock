@@ -2267,6 +2267,7 @@ dependencies = [
  "futures",
  "http-body-util",
  "internal",
+ "redis",
  "reqwest",
  "serde",
  "serde_json",
