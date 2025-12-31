@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type {
-  // WaveCalculationResponse,
+  WaveCalculationResponse,
   WaveInput,
   WaveInputKey,
 } from "../types";
@@ -9,11 +9,7 @@ import { Flex, For, Stack } from "@chakra-ui/react";
 import type { ObjectValues } from "@/commons/types";
 import { useWaveCalculation } from "../hooks/wave-calculation";
 import { SubmitResetGroup } from "@/commons/components";
-// import {
-//   createColumnHelper,
-//   getCoreRowModel,
-//   useReactTable,
-// } from "@tanstack/react-table";
+import { Table } from "@/commons/components/table";
 
 // interface WaveCalculationProps {}
 
@@ -42,24 +38,25 @@ const defaultWaveInput = {
   windWaves: { direction: 0.0, period: 0.0, height: 0.0 },
 };
 
-// const ResultTable = ({ data }: { data: WaveCalculationResponse }) => {
-//   const columnHelper = createColumnHelper<WaveCalculationResponse>();
-//   const columns = [
-//     columnHelper.accessor("rss", { id: "rss" }),
-//     columnHelper.accessor("rssDirectional", { id: "rssDirectional" }),
-//   ];
-//
-//   const table = useReactTable({
-//     data: [data],
-//     columns,
-//     getCoreRowModel: getCoreRowModel(),
-//   });
-// };
+const ResultTable = ({ data }: { data: WaveCalculationResponse }) => {
+  return (
+    <Table
+      columns={[
+        { field: "rss", id: "rss" },
+        {
+          field: "rssDirectional",
+          id: "rssDirectional",
+        },
+      ]}
+      data={[data]}
+    />
+  );
+};
 
 export const WaveCalculation = () => {
   const [value, setValue] = useState<WaveInput>(defaultWaveInput);
 
-  const { mutateAsync, isPending } = useWaveCalculation();
+  const { mutateAsync, isPending, data } = useWaveCalculation();
 
   return (
     <Stack alignItems={"center"} gapY={5}>
@@ -70,7 +67,7 @@ export const WaveCalculation = () => {
               label={config.label}
               waveInputKey={config.key}
               waveInput={value}
-              onChange={setValue}
+              onInputChange={setValue}
             />
           )}
         </For>
@@ -80,6 +77,7 @@ export const WaveCalculation = () => {
         onReset={() => setValue(defaultWaveInput)}
         loading={isPending}
       />
+      {data && <ResultTable data={data.payload} />}
     </Stack>
   );
 };

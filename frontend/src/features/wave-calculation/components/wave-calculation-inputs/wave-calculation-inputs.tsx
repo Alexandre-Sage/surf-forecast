@@ -4,17 +4,19 @@ import { Stack, For, Flex, Field } from "@chakra-ui/react";
 import type { WaveInput, WaveInputKey } from "../../types";
 import { WAVE_CALCULATION_INPUT_CONFIG } from "./type";
 
-export const WaveCalculationInputs = ({
-  label,
-  onChange,
-  waveInputKey,
-  waveInput,
-}: {
+interface WaveCalculationInputsProps {
   label: string;
-  onChange: SetState<WaveInput>;
+  onInputChange: SetState<WaveInput>;
   waveInputKey: WaveInputKey;
   waveInput: WaveInput;
-}) => {
+}
+
+export const WaveCalculationInputs = ({
+  label,
+  onInputChange,
+  waveInputKey,
+  waveInput,
+}: WaveCalculationInputsProps) => {
   return (
     <Stack>
       <Field.Root>
@@ -27,7 +29,7 @@ export const WaveCalculationInputs = ({
                 unit={config.unit}
                 value={waveInput[waveInputKey][config.key] ?? 0.0}
                 onChange={(value) =>
-                  onChange((prev) => ({
+                  onInputChange((prev) => ({
                     ...prev,
                     [waveInputKey]: {
                       ...prev[waveInputKey],

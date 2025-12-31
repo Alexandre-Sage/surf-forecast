@@ -1,6 +1,11 @@
 services:
   frontend:
-    build: frontend
+    build:
+      context: frontend
+      args:
+        VITE_API_HOST: ${VITE_API_HOST:-http://localhost:8080/api}
+        NODE_ENV: ${NODE_ENV:-production}
+
     ports:
       - "3001:3001"
     networks:
