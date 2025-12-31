@@ -1,0 +1,14 @@
+import { createRoute } from "@tanstack/react-router";
+import { {{pascalCase feature-name}} } from "./components/{{feature-name}}";
+import { rootRoute } from "@/commons/routes";
+
+export const {{upperCase (snakeCase feature-name)}}_ROUTE_PATH = "{{route-path}}";
+
+export const {{camelCase feature-name}}Route = createRoute({
+  getParentRoute: () => rootRoute,
+  path: {{upperCase (snakeCase feature-name)}}_ROUTE_PATH,
+  loader: ({ params }) => ({}),
+  component: () => {
+    return <{{pascalCase feature-name}} />;
+  },
+});

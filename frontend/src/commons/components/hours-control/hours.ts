@@ -1,0 +1,28 @@
+import { Time } from "@/commons/types/time";
+
+export const HOURS = [
+  Time.fromString("00:00"),
+  Time.fromString("01:00"),
+  Time.fromString("02:00"),
+  Time.fromString("03:00"),
+  Time.fromString("04:00"),
+  Time.fromString("05:00"),
+  Time.fromString("06:00"),
+  Time.fromString("07:00"),
+  Time.fromString("08:00"),
+  Time.fromString("09:00"),
+  Time.fromString("10:00"),
+  Time.fromString("11:00"),
+  Time.fromString("12:00"),
+  Time.fromString("13:00"),
+  Time.fromString("14:00"),
+  Time.fromString("15:00"),
+  Time.fromString("16:00"),
+  Time.fromString("17:00"),
+  Time.fromString("18:00"),
+  Time.fromString("19:00"),
+  Time.fromString("20:00"),
+  Time.fromString("21:00"),
+  Time.fromString("22:00"),
+  Time.fromString("23:00"),
+];
