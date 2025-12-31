@@ -1,0 +1,63 @@
+services:
+  frontend:
+    build: frontend
+    ports:
+      - "3001:3001"
+    networks:
+      - fronted-backend
+    environment:
+      VITE_API_HOST: http://localhost:8080/api
+
+  backend:
+    build: backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    volumes:
+      - sqlite-database:/bin/app/sqlite-databases
+    networks:
+      - fronted-backend
+      - backend-network
+    environment:
+      REDIS_URL: redis://redis:6379
+      SQLITE_URL: sqlite:/bin/app/sqlite-databases/api-keys.sqlite
+      HOST: backend
+      PORT: 8080
+
+  redis:
+    image: redis:latest
+    networks:
+      - backend-network
+
+  init-volumes:
+    image: alpine:latest
+    volumes:
+      - sqlite-database:/data
+    command: sh -c "mkdir -p /data && touch /data/api-keys.sqlite || true"
+    restart: "no"
+
+  migrate:
+    image: rust:latest
+    volumes:
+      - sqlite-database:/data
+      - ./backend/migrations:/migrations
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
+    command: >
+      sh -c "
+        cargo install sqlx-cli --no-default-features --features sqlite &&
+        sqlx migrate run --source /migrations --database-url sqlite:/data/api-keys.sqlite
+      "
+    restart: "no"
+
+networks:
+  fronted-backend:
+    driver: bridge
+  backend-network:
+    driver: bridge
+
+volumes:
+  sqlite-database:
