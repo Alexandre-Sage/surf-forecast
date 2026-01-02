@@ -5,3 +5,5 @@ export * from "./hours-control/hours-control";
 export * from "./number-input/number-input";
 export * from "./hours-control/hours";
 export * from "./buttons";
+export * from "./table";
+export * from "./formaters";

@@ -8,29 +8,38 @@ import {
   type IdIdentifier,
   type TableOptions,
 } from "@tanstack/react-table";
-import { useMemo, type ReactNode } from "react";
+import React, { useMemo, type ReactNode } from "react";
+
+export type Column<T, X extends keyof T = keyof T> = ColumnDefBase<T, T[X]> &
+  IdIdentifier<T, T[X]> & { field: X };
 
 interface TableProps<T> {
   data: T[];
-  columns: (ColumnDefBase<T, T[keyof T]> &
-    IdIdentifier<T, T[keyof T]> & { field: keyof T })[];
+  columns: Column<T, keyof T>[];
   tableOptions?: TableOptions<T>;
 }
 
+const useColumns = <T,>(columns: Column<T, keyof T>[]) =>
+  useMemo(() => {
+    const columnHelper = createColumnHelper<T>();
+    return columns.map((colDef) =>
+      columnHelper.accessor((row) => row[colDef.field], {
+        ...colDef,
+        cell:
+          colDef.cell ??
+          ((cell) => {
+            return (
+              <ChakraTable.Cell>
+                {cell.getValue() as unknown as ReactNode}
+              </ChakraTable.Cell>
+            );
+          }),
+      })
+    );
+  }, [columns]);
+
 export const Table = <T,>(props: TableProps<T>) => {
-  const columnHelper = createColumnHelper<T>();
-  const columns = props.columns.map((colDef) =>
-    columnHelper.accessor((row) => row[colDef.field], {
-      ...colDef,
-      cell:
-        colDef.cell ??
-        ((cell) => (
-          <ChakraTable.Cell>
-            {cell.getValue() as unknown as ReactNode}
-          </ChakraTable.Cell>
-        )),
-    })
-  );
+  const columns = useColumns(props.columns);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -46,7 +55,12 @@ export const Table = <T,>(props: TableProps<T>) => {
         <ChakraTable.Row key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
             <ChakraTable.ColumnHeader key={header.id}>
-              {flexRender(header.column.columnDef.header, header.getContext())}
+              {header.isPlaceholder
+                ? null
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
             </ChakraTable.ColumnHeader>
           ))}
         </ChakraTable.Row>

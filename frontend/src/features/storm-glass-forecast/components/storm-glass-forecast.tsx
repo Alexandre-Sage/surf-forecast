@@ -1,14 +1,16 @@
-import type { Coordinates } from "@/commons/types";
+import { type Coordinates } from "@/commons/types";
 import { useCoordinatesForecast } from "../hooks/storm-glass";
 import { DatePicker, Loading } from "@/commons/components";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { Flex, Grid, GridItem } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
-import { StormGlassWavesForecastTable } from "./swell-table";
 import "react-day-picker/style.css";
 import { HoursControl } from "@/commons/components/hours-control/hours-control";
 import { Time } from "@/commons/types/time";
+import { FORECAST_KEYS } from "../types/storm-glass-waves-forecast.type";
+import { Table } from "@/commons/components";
+import { WAVES_FORECAST_COLUMNS } from "./swell-table/columns";
 dayjs.extend(utc);
 
 interface StormGlassForecastProps {
@@ -22,26 +24,25 @@ export const StormGlassForecast = (props: StormGlassForecastProps) => {
     Time.fromString(forecastDate.format("HH:00"))!
   );
 
-  const memoData = useMemo(
-    () =>
-      (data?.payload || []).filter((data) => {
-        const time = dayjs(data.time);
+  const memoData = useMemo(() => {
+    const hourForecast = (data?.payload || []).find((data) => {
+      const time = dayjs(data.time);
 
-        return (
-          time.isSame(forecastDate, "date") &&
-          time.hour() === forecastDate.hour()
-        );
-      }),
-    [data, forecastDate]
-  );
+      return (
+        time.isSame(forecastDate, "date") && time.hour() === forecastDate.hour()
+      );
+    });
 
-  const daily = memoData.map((data) => (
-    <GridItem key={`sg-waves-forecast-${data.time.toString()}`} marginY={5}>
-      <StormGlassWavesForecastTable data={data} time={data.time} />
-    </GridItem>
-  ));
+    return hourForecast
+      ? FORECAST_KEYS.map((key) => ({
+          ...hourForecast[key],
+          type: key,
+        }))
+      : [];
+  }, [data, forecastDate]);
 
   if (isLoading) return <Loading />;
+
   return (
     <Grid flexDir={"column"} justifyContent={"center"}>
       <GridItem>
@@ -61,12 +62,11 @@ export const StormGlassForecast = (props: StormGlassForecastProps) => {
               setForecastTime(value);
               const updated = forecastDate.set("hours", value?.hours ?? 0);
               setForecastDate(updated);
-              console.log(value);
             }}
           />
         </Flex>
       </GridItem>
-      {daily}
+      <Table columns={WAVES_FORECAST_COLUMNS} data={memoData} />
     </Grid>
   );
 };
