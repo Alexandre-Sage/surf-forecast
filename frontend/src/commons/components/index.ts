@@ -7,3 +7,5 @@ export * from "./hours-control/hours";
 export * from "./buttons";
 export * from "./table";
 export * from "./formaters";
+export * from "./page/page.tsx";
+export * from "./dialog";

@@ -1,15 +1,11 @@
-import { useMemo, useState, type ReactNode } from "react";
-import type {
-  WaveCalculationResponse,
-  WaveInput,
-  WaveInputKey,
-} from "../types";
+import { useState } from "react";
+import type { WaveInput, WaveInputKey } from "../types";
 import { WaveCalculationInputs } from "./wave-calculation-inputs/wave-calculation-inputs";
 import { Flex, For, Stack } from "@chakra-ui/react";
 import type { ObjectValues } from "@/commons/types";
 import { useWaveCalculation } from "../hooks/wave-calculation";
-import { SubmitResetGroup } from "@/commons/components";
-import { Table } from "@/commons/components/table";
+import { Page, SubmitResetGroup } from "@/commons/components";
+import { ResultDialog } from "./wave-calculation-results/result-dialog";
 
 // interface WaveCalculationProps {}
 
@@ -38,46 +34,41 @@ const defaultWaveInput = {
   windWaves: { direction: 0.0, period: 0.0, height: 0.0 },
 };
 
-const ResultTable = ({ data }: { data: WaveCalculationResponse }) => {
-  return (
-    <Table
-      columns={[
-        { field: "rss", id: "rss" },
-        {
-          field: "rssDirectional",
-          id: "rssDirectional",
-        },
-      ]}
-      data={[data]}
-    />
-  );
-};
-
 export const WaveCalculation = () => {
   const [value, setValue] = useState<WaveInput>(defaultWaveInput);
+  const [resultModalIsOpen, setIsOpen] = useState(false);
 
-  const { mutateAsync, isPending, data } = useWaveCalculation();
+  const { mutateAsync, isPending, data } = useWaveCalculation({
+    onSuccess: () => setIsOpen(true),
+  });
 
   return (
-    <Stack alignItems={"center"} gapY={5}>
-      <Flex direction={"column"} gapY={5}>
-        <For each={WAVE_CALCULATION_CONFIG}>
-          {(config) => (
-            <WaveCalculationInputs
-              label={config.label}
-              waveInputKey={config.key}
-              waveInput={value}
-              onInputChange={setValue}
-            />
-          )}
-        </For>
-      </Flex>
-      <SubmitResetGroup
-        onSubmit={async () => await mutateAsync(value)}
-        onReset={() => setValue(defaultWaveInput)}
-        loading={isPending}
-      />
-      {data && <ResultTable data={data.payload} />}
-    </Stack>
+    <Page title="Wave height calculation">
+      <Stack alignItems={"center"} gapY={5}>
+        <Flex direction={"column"} gapY={5}>
+          <For each={WAVE_CALCULATION_CONFIG}>
+            {(config) => (
+              <WaveCalculationInputs
+                label={config.label}
+                waveInputKey={config.key}
+                waveInput={value}
+                onInputChange={setValue}
+              />
+            )}
+          </For>
+        </Flex>
+        <SubmitResetGroup
+          onSubmit={async () => await mutateAsync(value)}
+          onReset={() => setValue(defaultWaveInput)}
+          loading={isPending}
+        />
+        <ResultDialog
+          title="Calculation result"
+          isOpen={resultModalIsOpen}
+          setisOpen={setIsOpen}
+          data={data?.payload}
+        />
+      </Stack>
+    </Page>
   );
 };

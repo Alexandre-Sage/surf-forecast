@@ -1,6 +1,6 @@
 import { type Coordinates } from "@/commons/types";
 import { useCoordinatesForecast } from "../hooks/storm-glass";
-import { DatePicker, Loading } from "@/commons/components";
+import { DatePicker, Loading, Page } from "@/commons/components";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { Flex, Grid, GridItem } from "@chakra-ui/react";
@@ -11,6 +11,7 @@ import { Time } from "@/commons/types/time";
 import { FORECAST_KEYS } from "../types/storm-glass-waves-forecast.type";
 import { Table } from "@/commons/components";
 import { WAVES_FORECAST_COLUMNS } from "./swell-table/columns";
+
 dayjs.extend(utc);
 
 interface StormGlassForecastProps {
@@ -44,29 +45,31 @@ export const StormGlassForecast = (props: StormGlassForecastProps) => {
   if (isLoading) return <Loading />;
 
   return (
-    <Grid flexDir={"column"} justifyContent={"center"}>
-      <GridItem>
-        <Flex
-          flexDir={"row"}
-          alignItems={"center"}
-          justifyItems={"center"}
-          gapX={2}
-        >
-          <DatePicker
-            onChange={(date) => setForecastDate(dayjs(date))}
-            selected={forecastDate.toDate()}
-          />
-          <HoursControl
-            value={forecastTime}
-            onChange={(value) => {
-              setForecastTime(value);
-              const updated = forecastDate.set("hours", value?.hours ?? 0);
-              setForecastDate(updated);
-            }}
-          />
-        </Flex>
-      </GridItem>
-      <Table columns={WAVES_FORECAST_COLUMNS} data={memoData} />
-    </Grid>
+    <Page title="Forecast">
+      <Grid flexDir={"column"} justifyContent={"center"} gapY={4}>
+        <GridItem>
+          <Flex
+            flexDir={"row"}
+            alignItems={"center"}
+            justifyItems={"center"}
+            gapX={2}
+          >
+            <DatePicker
+              onChange={(date) => setForecastDate(dayjs(date))}
+              selected={forecastDate.toDate()}
+            />
+            <HoursControl
+              value={forecastTime}
+              onChange={(value) => {
+                setForecastTime(value);
+                const updated = forecastDate.set("hours", value?.hours ?? 0);
+                setForecastDate(updated);
+              }}
+            />
+          </Flex>
+        </GridItem>
+        <Table columns={WAVES_FORECAST_COLUMNS} data={memoData} />
+      </Grid>
+    </Page>
   );
 };
