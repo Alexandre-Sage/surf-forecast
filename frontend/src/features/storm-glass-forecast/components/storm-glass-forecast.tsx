@@ -32,6 +32,7 @@ export const StormGlassForecast = (props: StormGlassForecastProps) => {
         time.isSame(forecastDate, "date") && time.hour() === forecastDate.hour()
       );
     });
+    console.log(hourForecast);
 
     return hourForecast
       ? FORECAST_KEYS.map((key) => ({
@@ -40,6 +41,7 @@ export const StormGlassForecast = (props: StormGlassForecastProps) => {
         }))
       : [];
   }, [data, forecastDate]);
+  // console.log(memoData);
 
   if (isLoading) return <Loading />;
 
@@ -62,6 +64,7 @@ export const StormGlassForecast = (props: StormGlassForecastProps) => {
               setForecastTime(value);
               const updated = forecastDate.set("hours", value?.hours ?? 0);
               setForecastDate(updated);
+              console.log(value);
             }}
           />
         </Flex>

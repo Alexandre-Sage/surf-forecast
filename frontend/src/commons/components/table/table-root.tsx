@@ -1,42 +1,18 @@
 import { Table as ChakraTable } from "@chakra-ui/react";
 import {
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  type ColumnDefBase,
-  type IdIdentifier,
   type TableOptions,
 } from "@tanstack/react-table";
-import React, { useMemo, type ReactNode } from "react";
-
-export type Column<T, X extends keyof T = keyof T> = ColumnDefBase<T, T[X]> &
-  IdIdentifier<T, T[X]> & { field: X };
+import { useMemo } from "react";
+import { useColumns, type Column } from "./columns";
 
 interface TableProps<T> {
   data: T[];
   columns: Column<T, keyof T>[];
   tableOptions?: TableOptions<T>;
 }
-
-const useColumns = <T,>(columns: Column<T, keyof T>[]) =>
-  useMemo(() => {
-    const columnHelper = createColumnHelper<T>();
-    return columns.map((colDef) =>
-      columnHelper.accessor((row) => row[colDef.field], {
-        ...colDef,
-        cell:
-          colDef.cell ??
-          ((cell) => {
-            return (
-              <ChakraTable.Cell>
-                {cell.getValue() as unknown as ReactNode}
-              </ChakraTable.Cell>
-            );
-          }),
-      })
-    );
-  }, [columns]);
 
 export const Table = <T,>(props: TableProps<T>) => {
   const columns = useColumns(props.columns);
@@ -68,17 +44,13 @@ export const Table = <T,>(props: TableProps<T>) => {
     [table]
   );
 
-  const rows = useMemo(
-    () =>
-      table.getRowModel().rows.map((row) => (
-        <ChakraTable.Row key={row.id}>
-          {row.getVisibleCells().map((cell) => {
-            return flexRender(cell.column.columnDef.cell, cell.getContext());
-          })}
-        </ChakraTable.Row>
-      )),
-    [table]
-  );
+  const rows = table.getRowModel().rows.map((row) => (
+    <ChakraTable.Row key={row.id}>
+      {row.getVisibleCells().map((cell) => {
+        return flexRender(cell.column.columnDef.cell, cell.getContext());
+      })}
+    </ChakraTable.Row>
+  ));
 
   return (
     <ChakraTable.Root
